@@ -7,19 +7,19 @@ function Home() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const loadCourses = async () => {
+      try {
+        const response = await getAllCourses();
+        setCourses(response.data.slice(0, 3)); // Show only 3 courses on home
+        setLoading(false);
+      } catch (error) {
+        console.error('Error loading courses:', error);
+        setLoading(false);
+      }
+    };
+    
     loadCourses();
   }, []);
-
-  const loadCourses = async () => {
-    try {
-      const response = await getAllCourses();
-      setCourses(response.data.slice(0, 3)); // Show only 3 courses on home
-      setLoading(false);
-    } catch (error) {
-      console.error('Error loading courses:', error);
-      setLoading(false);
-    }
-  };
 
   return (
     <div>

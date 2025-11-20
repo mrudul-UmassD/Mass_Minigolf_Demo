@@ -150,7 +150,9 @@ const golfCourses = [
 async function seedDatabase() {
   try {
     // Connect to MongoDB
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/massachusetts_minigolf');
+    const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/massachusetts_minigolf';
+    console.log('Connecting to:', uri.substring(0, 30) + '...');
+    await mongoose.connect(uri);
     console.log('✅ Connected to MongoDB');
 
     // Clear existing data
