@@ -1,0 +1,184 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Admin User Model
+model Admin {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  password  String   // hashed password
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Golf Course Model
+model GolfCourse {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?  @db.Text
+  address     String
+  city        String
+  state       String   @default("Massachusetts")
+  zipCode     String?
+  phone       String?
+  email       String?
+  website     String?
+  googleMapsUrl String?
+  latitude    Float?
+  longitude   Float?
+  
+  // Features
+  features    String[] // Array of features like "18 holes", "Night Golf", etc
+  amenities   String[] // Facilities like "Parking", "Cafe", "Restrooms"
+  
+  // Operational Details
+  isActive    Boolean  @default(true)
+  openingHours Json?   // Store hours in JSON format
+  
+  // Relationships
+  images      CourseImage[]
+  tracks      Track[]
+  sessions    Session[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([slug])
+  @@index([city])
+  @@index([isActive])
+}
+
+// Course Images Model
+model CourseImage {
+  id          String      @id @default(cuid())
+  courseId    String
+  course      GolfCourse  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  url         String
+  caption     String?
+  isPrimary   Boolean     @default(false)
+  order       Int         @default(0)
+  createdAt   DateTime    @default(now())
+  
+  @@index([courseId])
+  @@index([isPrimary])
+}
+
+// Track/Course Model (different courses available at a golf location)
+model Track {
+  id          String      @id @default(cuid())
+  courseId    String
+  course      GolfCourse  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  name        String      // e.g., "Pirate Course", "Jungle Course"
+  description String?     @db.Text
+  holes       Int         // Number of holes
+  difficulty  String      // Easy, Medium, Hard
+  duration    Int         // Estimated duration in minutes
+  isActive    Boolean     @default(true)
+  
+  // Relationships
+  sessions    Session[]
+  
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  
+  @@index([courseId])
+  @@index([isActive])
+}
+
+// Session Model (available booking slots)
+model Session {
+  id          String      @id @default(cuid())
+  courseId    String
+  course      GolfCourse  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  trackId     String?
+  track       Track?      @relation(fields: [trackId], references: [id], onDelete: SetNull)
+  
+  // Session Details
+  date        DateTime
+  startTime   DateTime
+  endTime     DateTime
+  maxPlayers  Int         @default(4)
+  pricePerPerson Float
+  
+  // Status
+  isAvailable Boolean     @default(true)
+  isCancelled Boolean     @default(false)
+  
+  // Relationships
+  bookings    Booking[]
+  
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  
+  @@index([courseId])
+  @@index([trackId])
+  @@index([date])
+  @@index([isAvailable])
+}
+
+// Booking Model
+model Booking {
+  id          String      @id @default(cuid())
+  sessionId   String
+  session     Session     @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  
+  // Customer Details
+  customerName  String
+  customerEmail String
+  customerPhone String
+  numberOfPlayers Int      @default(1)
+  
+  // Booking Status
+  status      String      @default("pending") // pending, confirmed, cancelled, completed
+  totalPrice  Float
+  
+  // Payment (can be expanded later)
+  paymentStatus String    @default("pending") // pending, paid, refunded
+  paymentMethod String?   // cash, card, online
+  
+  // Special Requests
+  notes       String?     @db.Text
+  
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  
+  @@index([sessionId])
+  @@index([customerEmail])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// Website Content Model (for editable content)
+model WebsiteContent {
+  id          String   @id @default(cuid())
+  key         String   @unique // e.g., "homepage_hero_title", "about_us_content"
+  content     String   @db.Text
+  contentType String   @default("text") // text, html, json
+  updatedAt   DateTime @updatedAt
+  
+  @@index([key])
+}
+
+// Contact Form Submissions
+model ContactSubmission {
+  id          String   @id @default(cuid())
+  name        String
+  email       String
+  phone       String?
+  subject     String?
+  message     String   @db.Text
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  
+  @@index([createdAt])
+  @@index([isRead])
+}

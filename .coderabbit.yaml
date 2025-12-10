@@ -1,0 +1,104 @@
+# CodeRabbit Configuration for MiniGolf Massachusetts
+
+# Language settings
+language: "en-US"
+
+# Review settings
+reviews:
+  # Enable auto-reviews on pull requests
+  auto_review:
+    enabled: true
+    # Review new code in pull requests
+    drafts: false
+    
+  # What to focus on during reviews
+  focus_areas:
+    - security
+    - performance
+    - best-practices
+    - type-safety
+    - accessibility
+    
+  # Code quality checks
+  checks:
+    - sql-injection
+    - xss-vulnerabilities
+    - authentication-issues
+    - data-validation
+    - error-handling
+    - async-await-patterns
+    - react-best-practices
+    - nextjs-patterns
+    
+  # Review style
+  tone: "constructive"
+  detail_level: "detailed"
+  
+  # Exclude certain files/directories from review
+  exclude:
+    - "node_modules/**"
+    - ".next/**"
+    - "dist/**"
+    - "build/**"
+    - "*.config.js"
+    - "*.config.ts"
+    - "package-lock.json"
+
+# Specific checks for this project
+custom_checks:
+  # Database security
+  - name: "Prisma Query Safety"
+    pattern: "prisma\\.(.*)\\.findMany|findUnique|create|update|delete"
+    message: "Ensure proper input validation and authorization checks"
+    
+  # Authentication
+  - name: "Auth Protection"
+    pattern: "/admin"
+    message: "Verify admin routes are properly protected with authentication"
+    
+  # API Routes
+  - name: "API Input Validation"
+    pattern: "export async function (POST|PUT|PATCH|DELETE)"
+    message: "Ensure request body validation with Zod or similar"
+
+# Integration settings
+integrations:
+  github:
+    pr_reviews: true
+    issue_comments: true
+    
+# Notifications
+notifications:
+  email: false
+  slack: false
+  
+# AI Model preferences
+ai:
+  model: "gpt-4"
+  temperature: 0.3
+  
+# File-specific settings
+file_settings:
+  # TypeScript/TSX files
+  "**/*.{ts,tsx}":
+    - check_type_safety
+    - check_unused_imports
+    - check_react_hooks
+    
+  # Prisma schema
+  "**/*.prisma":
+    - check_indexes
+    - check_relations
+    - check_constraints
+    
+  # API routes
+  "**/api/**/*.ts":
+    - check_error_handling
+    - check_input_validation
+    - check_authentication
+    
+  # Components
+  "**/components/**/*.tsx":
+    - check_accessibility
+    - check_performance
+    - check_prop_types
